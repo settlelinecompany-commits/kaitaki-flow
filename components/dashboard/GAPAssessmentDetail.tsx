@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, memo } from 'react';
 import {
   Accordion,
   AccordionDetails,
@@ -9,8 +9,8 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Chip,
-  Divider,
   FormControl,
   FormControlLabel,
   InputLabel,
@@ -40,27 +40,21 @@ interface GapControl {
   assessmentQuestion?: string;
   section: string;
   policy: string;
-  policySource: string; // e.g., "Annex A" or "Clause 5"
+  policySource: string;
 }
 
 interface GapControlData {
-  // Group 1: Metadata
   confidence: 'High' | 'Medium' | 'Low' | '';
-  
-  // Group 2: Assessment
   answer: 'Yes' | 'No' | 'Partial' | 'Unknown' | '';
   currentState: string;
   evidence: string;
-  
-  // Group 3: GAP + Risk
   gapIdentified: string;
+  internalNotes: string;
   impact: 'High' | 'Medium' | 'Low' | '';
   likelihood: 'High' | 'Medium' | 'Low' | '';
   overallRisk: 'High' | 'Medium' | 'Low' | '';
   riskLevel: 'High' | 'Medium' | 'Low' | '';
   actionPriority: 'High' | 'Medium' | 'Low' | '';
-  
-  // Group 4: Mitigation & Workflow
   recommendedMitigation: string;
   targetState: string;
   ownerDepartment: string;
@@ -69,14 +63,14 @@ interface GapControlData {
   reviewedBy: string;
   reviewedOn: Dayjs | null;
   comments: string;
+  isReviewed: boolean;
 }
 
-// Policy display names mapping
 const policyDisplayNames: Record<string, string> = {
-  'iso-27001-clause-5': 'ISO/IEC 27001 — Clause 5',
-  'iso-27002-clause-6': 'ISO/IEC 27002 — Clause 6',
-  'iso-27701-annex-a': 'ISO/IEC 27701 — Annex A',
-  'iso-27701-annex-b': 'ISO/IEC 27701 — Annex B',
+  'iso-27001-clause-5': 'Clause 5',
+  'iso-27002-clause-6': 'Clause 6',
+  'iso-27701-annex-a': 'Annex A',
+  'iso-27701-annex-b': 'Annex B',
   'pdpl-ksa': 'PDPL',
   'pdpl-executive': 'PDPL Executive Regulations',
   'nca-data-mgmt': 'NCA Data Management Guidelines',
@@ -87,7 +81,6 @@ const policyDisplayNames: Record<string, string> = {
   'hr-data-handling': 'HR Data Handling Policy',
 };
 
-// Policy source tags
 const policySourceTags: Record<string, string> = {
   'iso-27001-clause-5': 'Clause 5',
   'iso-27002-clause-6': 'Clause 6',
@@ -103,7 +96,6 @@ const policySourceTags: Record<string, string> = {
   'hr-data-handling': 'Internal Policy',
 };
 
-// Generate controls for each policy
 const generateControlsForPolicy = (policyId: string): GapControl[] => {
   const baseControls: Omit<GapControl, 'policy' | 'policySource'>[] = [
     {
@@ -263,36 +255,544 @@ const calculateOverallRisk = (impact: string, likelihood: string): 'High' | 'Med
   return 'Low';
 };
 
+interface ControlCardProps {
+  control: GapControl;
+  data: GapControlData;
+  onUpdate: (field: keyof GapControlData, value: any) => void;
+}
+
+const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    requirement: true,
+    gap: false,
+    mitigation: false,
+  });
+
+  const handleSectionToggle = (section: string) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  // Generate agent insight text
+  const agentInsight = useMemo(() => {
+    const confidence = data.confidence || 'Medium';
+    const riskPrediction = data.overallRisk || 'Medium';
+    if (data.answer === 'Yes' || data.answer === 'Partial') {
+      return `This control appears compliant based on selected policies.`;
+    }
+    return `This control requires review. Gap identified: ${data.gapIdentified || 'No major gaps predicted.'}`;
+  }, [control.article, data.gapIdentified, data.overallRisk, data.confidence, data.answer]);
+
+  return (
+    <Card
+      variant="outlined"
+      sx={{
+        mb: 0,
+        border: 'none',
+        borderRadius: 0,
+        boxShadow: 'none',
+        backgroundColor: 'background.paper',
+        position: 'relative',
+        '&:hover': {
+          backgroundColor: 'var(--primary-muted)',
+        },
+        ...(data.isReviewed && {
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: '3px',
+            backgroundColor: 'success.main',
+          },
+        }),
+      }}
+    >
+      <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
+        {/* Card Header */}
+        <Box sx={{ mb: 2 }}>
+          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ mb: 1 }}>
+            <Typography variant="subtitle2" component="h3" sx={{ fontWeight: 600, fontSize: '14px' }}>
+              {control.id}
+            </Typography>
+            <Chip label={control.article} size="small" variant="outlined" sx={{ fontSize: '12px', height: 24 }} />
+            <Chip
+              label={control.policySource}
+              size="small"
+              variant="outlined"
+              color="primary"
+              sx={{ fontSize: '12px', height: 24 }}
+            />
+            <Box sx={{ flexGrow: 1 }} />
+            {/* Review Checkbox - Right Aligned */}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={data.isReviewed || false}
+                  onChange={(e) => onUpdate('isReviewed', e.target.checked)}
+                  size="small"
+                />
+              }
+              label={
+                <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.secondary' }}>
+                  Mark as reviewed
+                </Typography>
+              }
+            />
+          </Stack>
+
+          {/* Agent Insight Strip */}
+          <Box
+            sx={{
+              backgroundColor: 'var(--primary-muted)',
+              border: '1px solid',
+              borderColor: 'divider',
+              borderRadius: '6px',
+              p: 1,
+              mt: 1,
+            }}
+          >
+            <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+              <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '12px', color: 'text.secondary' }}>
+                Agent Insight:
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.secondary', flex: 1 }}>
+                {agentInsight}
+              </Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Chip
+                  label={`Confidence: ${data.confidence || 'Medium'}`}
+                  size="small"
+                  color={getConfidenceColor(data.confidence || 'Medium')}
+                  sx={{ fontSize: '11px', height: 20 }}
+                />
+                {data.overallRisk && (
+                  <Chip
+                    label={`Risk Prediction: ${data.overallRisk}`}
+                    size="small"
+                    color={getRiskColor(data.overallRisk)}
+                    sx={{ fontSize: '11px', height: 20 }}
+                  />
+                )}
+              </Stack>
+            </Stack>
+          </Box>
+        </Box>
+
+        {/* Subsection 1: Requirement & Assessment (Open by Default) */}
+        <Accordion
+          expanded={expandedSections.requirement}
+          onChange={() => handleSectionToggle('requirement')}
+          sx={{
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            '&.Mui-expanded': { margin: 0 },
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '8px',
+            mb: 1,
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ fontSize: '18px' }} />}
+            sx={{
+              minHeight: 36,
+              px: 1.5,
+              py: 0.5,
+              '&.Mui-expanded': { minHeight: 36 },
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '12px', color: 'text.secondary' }}>
+              {expandedSections.requirement ? '▼' : '▶'} Requirement & Assessment
+            </Typography>
+          </AccordionSummary>
+          {expandedSections.requirement && (
+            <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
+              <Stack spacing={1.5}>
+                {/* Requirement Block */}
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5, fontSize: '14px', lineHeight: '20px' }}>
+                    {control.requirement}
+                  </Typography>
+                  {control.assessmentQuestion && (
+                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '12px', lineHeight: '18px' }}>
+                      {control.assessmentQuestion}
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* Answer Block */}
+                <Box>
+                  <Typography variant="caption" sx={{ mb: 0.5, fontWeight: 600, display: 'block', fontSize: '12px' }}>
+                    Answer
+                  </Typography>
+                  <RadioGroup
+                    row
+                    value={data.answer}
+                    onChange={(e) => onUpdate('answer', e.target.value)}
+                    sx={{ gap: 1 }}
+                  >
+                    <FormControlLabel value="Yes" control={<Radio size="small" />} label="Yes" sx={{ m: 0 }} />
+                    <FormControlLabel value="No" control={<Radio size="small" />} label="No" sx={{ m: 0 }} />
+                    <FormControlLabel value="Partial" control={<Radio size="small" />} label="Partial" sx={{ m: 0 }} />
+                    <FormControlLabel value="Unknown" control={<Radio size="small" />} label="Unknown" sx={{ m: 0 }} />
+                  </RadioGroup>
+                </Box>
+
+                {/* 2-Column Layout */}
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                    columnGap: 3,
+                    rowGap: 1.5,
+                  }}
+                >
+                  {/* Left Column - Qualitative */}
+                  <Box>
+                    <TextField
+                      label="Current State"
+                      multiline
+                      rows={2}
+                      value={data.currentState}
+                      onChange={(e) => onUpdate('currentState', e.target.value)}
+                      placeholder="Describe the current state..."
+                      fullWidth
+                      size="small"
+                      sx={{ fontSize: '14px', mb: 1.5 }}
+                    />
+                    <Button variant="outlined" size="small" sx={{ py: 0.25, px: 1, fontSize: '12px' }}>
+                      Attach Evidence
+                    </Button>
+                  </Box>
+
+                  {/* Right Column - Quantitative (empty for Requirement section) */}
+                  <Box />
+                </Box>
+              </Stack>
+            </AccordionDetails>
+          )}
+        </Accordion>
+
+        {/* Subsection 2: GAP & Risk Analysis (Collapsed by Default) */}
+        <Accordion
+          expanded={expandedSections.gap}
+          onChange={() => handleSectionToggle('gap')}
+          sx={{
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            '&.Mui-expanded': { margin: 0 },
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '8px',
+            mb: 1,
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ fontSize: '18px' }} />}
+            sx={{
+              minHeight: 36,
+              px: 1.5,
+              py: 0.5,
+              '&.Mui-expanded': { minHeight: 36 },
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '12px', color: 'text.secondary' }}>
+              {expandedSections.gap ? '▼' : '▶'} GAP & Risk Analysis
+            </Typography>
+          </AccordionSummary>
+          {expandedSections.gap && (
+            <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                  columnGap: 3,
+                  rowGap: 1.5,
+                }}
+              >
+                {/* Left Column - Qualitative */}
+                <Box>
+                  <TextField
+                    label="Gap Description"
+                    multiline
+                    rows={3}
+                    value={data.gapIdentified}
+                    onChange={(e) => onUpdate('gapIdentified', e.target.value)}
+                    placeholder="Describe any gaps..."
+                    fullWidth
+                    size="small"
+                    sx={{ fontSize: '14px', mb: 1.5 }}
+                  />
+                  <TextField
+                    label="Recommended Action"
+                    multiline
+                    rows={2}
+                    value={data.recommendedMitigation}
+                    onChange={(e) => onUpdate('recommendedMitigation', e.target.value)}
+                    placeholder="Describe recommended actions..."
+                    fullWidth
+                    size="small"
+                    sx={{ fontSize: '14px' }}
+                  />
+                </Box>
+
+                {/* Right Column - Quantitative */}
+                <Box>
+                  <Stack spacing={1.5}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Risk Level</InputLabel>
+                      <Select
+                        value={data.riskLevel}
+                        label="Risk Level"
+                        onChange={(e) => onUpdate('riskLevel', e.target.value)}
+                      >
+                        <MenuItem value="High">High</MenuItem>
+                        <MenuItem value="Medium">Medium</MenuItem>
+                        <MenuItem value="Low">Low</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Impact</InputLabel>
+                      <Select
+                        value={data.impact}
+                        label="Impact"
+                        onChange={(e) => onUpdate('impact', e.target.value)}
+                      >
+                        <MenuItem value="High">High</MenuItem>
+                        <MenuItem value="Medium">Medium</MenuItem>
+                        <MenuItem value="Low">Low</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Likelihood</InputLabel>
+                      <Select
+                        value={data.likelihood}
+                        label="Likelihood"
+                        onChange={(e) => onUpdate('likelihood', e.target.value)}
+                      >
+                        <MenuItem value="High">High</MenuItem>
+                        <MenuItem value="Medium">Medium</MenuItem>
+                        <MenuItem value="Low">Low</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Action Priority</InputLabel>
+                      <Select
+                        value={data.actionPriority}
+                        label="Action Priority"
+                        onChange={(e) => onUpdate('actionPriority', e.target.value)}
+                      >
+                        <MenuItem value="High">High</MenuItem>
+                        <MenuItem value="Medium">Medium</MenuItem>
+                        <MenuItem value="Low">Low</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Stack>
+                </Box>
+              </Box>
+            </AccordionDetails>
+          )}
+        </Accordion>
+
+        {/* Subsection 3: Mitigation & Workflow (Collapsed by Default) */}
+        <Accordion
+          expanded={expandedSections.mitigation}
+          onChange={() => handleSectionToggle('mitigation')}
+          sx={{
+            boxShadow: 'none',
+            '&:before': { display: 'none' },
+            '&.Mui-expanded': { margin: 0 },
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: '8px',
+          }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ fontSize: '18px' }} />}
+            sx={{
+              minHeight: 36,
+              px: 1.5,
+              py: 0.5,
+              '&.Mui-expanded': { minHeight: 36 },
+            }}
+          >
+            <Typography variant="caption" sx={{ fontWeight: 600, fontSize: '12px', color: 'text.secondary' }}>
+              {expandedSections.mitigation ? '▼' : '▶'} Mitigation & Workflow
+            </Typography>
+          </AccordionSummary>
+          {expandedSections.mitigation && (
+            <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                  columnGap: 3,
+                  rowGap: 1.5,
+                }}
+              >
+                {/* Left Column - Qualitative */}
+                <Box>
+                  <TextField
+                    label="Recommended Action"
+                    multiline
+                    rows={2}
+                    value={data.recommendedMitigation}
+                    onChange={(e) => onUpdate('recommendedMitigation', e.target.value)}
+                    placeholder="Describe recommended actions..."
+                    fullWidth
+                    size="small"
+                    sx={{ fontSize: '14px', mb: 1.5 }}
+                  />
+                  <TextField
+                    label="Target State"
+                    multiline
+                    rows={2}
+                    value={data.targetState}
+                    onChange={(e) => onUpdate('targetState', e.target.value)}
+                    placeholder="Describe the desired target state..."
+                    fullWidth
+                    size="small"
+                    sx={{ fontSize: '14px', mb: 1.5 }}
+                  />
+                  <TextField
+                    label="Comments"
+                    multiline
+                    rows={2}
+                    value={data.comments}
+                    onChange={(e) => onUpdate('comments', e.target.value)}
+                    placeholder="Add any additional notes..."
+                    fullWidth
+                    size="small"
+                    sx={{ fontSize: '14px' }}
+                  />
+                </Box>
+
+                {/* Right Column - Quantitative */}
+                <Box>
+                  <Stack spacing={1.5}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Owner</InputLabel>
+                      <Select
+                        value={data.ownerDepartment}
+                        label="Owner"
+                        onChange={(e) => onUpdate('ownerDepartment', e.target.value)}
+                      >
+                        {departments.map((dept) => (
+                          <MenuItem key={dept} value={dept}>
+                            {dept}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+
+                    <DatePicker
+                      label="Due Date"
+                      value={data.dueDate}
+                      onChange={(date) => onUpdate('dueDate', date)}
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          size: 'small',
+                        },
+                      }}
+                    />
+
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Status</InputLabel>
+                      <Select value={data.status} label="Status" onChange={(e) => onUpdate('status', e.target.value)}>
+                        <MenuItem value="Not Started">Not Started</MenuItem>
+                        <MenuItem value="Auto-Filled">Auto-Filled</MenuItem>
+                        <MenuItem value="Needs Review">Needs Review</MenuItem>
+                        <MenuItem value="In Progress">In Progress</MenuItem>
+                        <MenuItem value="Completed">Completed</MenuItem>
+                      </Select>
+                    </FormControl>
+
+                    {data.status === 'Completed' && (
+                      <>
+                        <TextField
+                          label="Reviewed By"
+                          value={data.reviewedBy}
+                          onChange={(e) => onUpdate('reviewedBy', e.target.value)}
+                          fullWidth
+                          size="small"
+                        />
+                        <DatePicker
+                          label="Reviewed On"
+                          value={data.reviewedOn}
+                          onChange={(date) => onUpdate('reviewedOn', date)}
+                          slotProps={{
+                            textField: {
+                              fullWidth: true,
+                              size: 'small',
+                            },
+                          }}
+                        />
+                      </>
+                    )}
+                  </Stack>
+                </Box>
+              </Box>
+            </AccordionDetails>
+          )}
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+});
+
 export default function GAPAssessmentDetail() {
+  // Always start with empty array to ensure SSR/client match
   const [selectedPolicies, setSelectedPolicies] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const [controlData, setControlData] = useState<Record<string, GapControlData>>({});
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [mounted, setMounted] = useState(false);
 
-  // Load selected policies from localStorage
+  // Load from localStorage only after hydration
   useEffect(() => {
-    const stored = localStorage.getItem('kaitaki_selected_policies');
-    if (stored) {
-      try {
+    setMounted(true);
+    try {
+      const stored = localStorage.getItem('kaitaki_selected_policies');
+      if (stored) {
         const policies = JSON.parse(stored);
-        setSelectedPolicies(policies);
-      } catch (e) {
-        setSelectedPolicies(['pdpl-ksa']);
+        if (policies.length > 0) {
+          setSelectedPolicies(policies);
+          setIsLoading(false);
+          return;
+        }
       }
-    } else {
+      // Default fallback
       setSelectedPolicies(['pdpl-ksa']);
+      setIsLoading(false);
+    } catch (e) {
+      // Fallback on parse error
+      setSelectedPolicies(['pdpl-ksa']);
+      setIsLoading(false);
     }
   }, []);
 
   // Generate all controls for selected policies
-  const allControls = selectedPolicies.flatMap((policyId) => generateControlsForPolicy(policyId));
+  const allControls = useMemo(() => {
+    return selectedPolicies.flatMap((policyId) => generateControlsForPolicy(policyId));
+  }, [selectedPolicies]);
 
   // Group controls by policy
-  const controlsByPolicy = selectedPolicies.reduce((acc, policyId) => {
-    acc[policyId] = allControls.filter((control) => control.policy === policyId);
-    return acc;
-  }, {} as Record<string, GapControl[]>);
+  const controlsByPolicy = useMemo(() => {
+    return selectedPolicies.reduce((acc, policyId) => {
+      acc[policyId] = allControls.filter((control) => control.policy === policyId);
+      return acc;
+    }, {} as Record<string, GapControl[]>);
+  }, [selectedPolicies, allControls]);
 
   // Auto-fill on component mount or when policies change
   useEffect(() => {
@@ -315,6 +815,7 @@ export default function GAPAssessmentDetail() {
         currentState: 'Appears implemented based on selected policies.',
         evidence: '',
         gapIdentified: 'No major issues found.',
+        internalNotes: '',
         impact,
         likelihood,
         overallRisk,
@@ -328,11 +829,12 @@ export default function GAPAssessmentDetail() {
         reviewedBy: '',
         reviewedOn: null,
         comments: '',
+        isReviewed: false,
       };
     });
 
     setControlData(autoFillData);
-  }, [selectedPolicies]);
+  }, [selectedPolicies, allControls]);
 
   const updateControlData = (controlId: string, field: keyof GapControlData, value: any) => {
     setControlData((prev) => {
@@ -365,6 +867,7 @@ export default function GAPAssessmentDetail() {
         currentState: '',
         evidence: '',
         gapIdentified: '',
+        internalNotes: '',
         impact: '',
         likelihood: '',
         overallRisk: '',
@@ -378,6 +881,7 @@ export default function GAPAssessmentDetail() {
         reviewedBy: '',
         reviewedOn: null,
         comments: '',
+        isReviewed: false,
       }
     );
   };
@@ -387,9 +891,7 @@ export default function GAPAssessmentDetail() {
   };
 
   const getReviewedCount = () => {
-    return Object.values(controlData).filter(
-      (data) => data.status === 'Completed' || data.status === 'Needs Review'
-    ).length;
+    return Object.values(controlData).filter((data) => data.isReviewed).length;
   };
 
   const handleMarkAsReviewed = () => {
@@ -402,315 +904,21 @@ export default function GAPAssessmentDetail() {
     setSnackbarOpen(true);
   };
 
-  const currentPolicyId = selectedPolicies[activeTab];
-  const currentControls = controlsByPolicy[currentPolicyId] || [];
 
-  const renderControlCard = (control: GapControl) => {
-    const data = getControlData(control.id);
+  // Only render controls for active tab (lazy rendering) - moved to render section
+
+  // Show loading state during hydration or while loading policies
+  if (!mounted || isLoading) {
     return (
-      <Card key={control.id} variant="outlined" sx={{ mb: 1 }}>
-        <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-          <Stack spacing={1.5}>
-            {/* GROUP 1: Control Metadata */}
-            <Box>
-              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" sx={{ mb: 0.5 }}>
-                <Typography variant="subtitle2" component="h3" sx={{ fontWeight: 600 }}>
-                  {control.id}
-                </Typography>
-                <Chip label={control.article} size="small" variant="outlined" />
-                <Chip label={control.policySource} size="small" variant="outlined" color="primary" />
-                {data.confidence && (
-                  <Chip
-                    label={`Auto-Filled (${data.confidence} Confidence)`}
-                    size="small"
-                    color={getConfidenceColor(data.confidence)}
-                  />
-                )}
-              </Stack>
-            </Box>
-
-            <Divider sx={{ my: 0.5 }} />
-
-            {/* GROUP 2: Requirement & Assessment */}
-            <Box>
-              <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.75, color: 'text.primary', display: 'block' }}>
-                Requirement & Assessment
-              </Typography>
-              <Stack spacing={1}>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.25, fontSize: '0.875rem' }}>
-                    {control.requirement}
-                  </Typography>
-                  {control.assessmentQuestion && (
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                      {control.assessmentQuestion}
-                    </Typography>
-                  )}
-                </Box>
-
-                <FormControl component="fieldset" sx={{ mt: 0.5 }}>
-                  <Typography variant="caption" sx={{ mb: 0.25, fontWeight: 600, display: 'block', fontSize: '0.75rem' }}>
-                    Answer
-                  </Typography>
-                  <RadioGroup
-                    row
-                    value={data.answer}
-                    onChange={(e) =>
-                      updateControlData(control.id, 'answer', e.target.value as GapControlData['answer'])
-                    }
-                    sx={{ gap: 1 }}
-                  >
-                    <FormControlLabel value="Yes" control={<Radio size="small" />} label="Yes" sx={{ m: 0 }} />
-                    <FormControlLabel value="No" control={<Radio size="small" />} label="No" sx={{ m: 0 }} />
-                    <FormControlLabel value="Partial" control={<Radio size="small" />} label="Partial" sx={{ m: 0 }} />
-                    <FormControlLabel value="Unknown" control={<Radio size="small" />} label="Unknown" sx={{ m: 0 }} />
-                  </RadioGroup>
-                </FormControl>
-
-                <TextField
-                  label="Current State"
-                  multiline
-                  rows={1.5}
-                  value={data.currentState}
-                  onChange={(e) => updateControlData(control.id, 'currentState', e.target.value)}
-                  placeholder="Describe the current state..."
-                  fullWidth
-                  size="small"
-                  sx={{ mt: 0.5 }}
-                />
-
-                <Box sx={{ mt: 0.5 }}>
-                  <Button variant="outlined" size="small" sx={{ py: 0.25, px: 1, fontSize: '0.75rem' }}>
-                    Upload Evidence
-                  </Button>
-                  {data.evidence && (
-                    <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontSize: '0.7rem' }}>
-                      {data.evidence}
-                    </Typography>
-                  )}
-                </Box>
-              </Stack>
-            </Box>
-
-            <Divider sx={{ my: 0.5 }} />
-
-            {/* GROUP 3: GAP + Risk Analysis */}
-            <Box>
-              <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.75, color: 'text.primary', display: 'block' }}>
-                GAP & Risk Analysis
-              </Typography>
-              <Stack spacing={1}>
-                <TextField
-                  label="Gap Identified"
-                  multiline
-                  rows={1.5}
-                  value={data.gapIdentified}
-                  onChange={(e) => updateControlData(control.id, 'gapIdentified', e.target.value)}
-                  placeholder="Describe any gaps..."
-                  fullWidth
-                  size="small"
-                  sx={{ mt: 0.5 }}
-                />
-
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 0.5 }}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Impact</InputLabel>
-                    <Select
-                      value={data.impact}
-                      label="Impact"
-                      onChange={(e) => updateControlData(control.id, 'impact', e.target.value)}
-                    >
-                      <MenuItem value="High">High</MenuItem>
-                      <MenuItem value="Medium">Medium</MenuItem>
-                      <MenuItem value="Low">Low</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Likelihood</InputLabel>
-                    <Select
-                      value={data.likelihood}
-                      label="Likelihood"
-                      onChange={(e) => updateControlData(control.id, 'likelihood', e.target.value)}
-                    >
-                      <MenuItem value="High">High</MenuItem>
-                      <MenuItem value="Medium">Medium</MenuItem>
-                      <MenuItem value="Low">Low</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Stack>
-
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} alignItems="center">
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Overall Risk</InputLabel>
-                    <Select
-                      value={data.overallRisk}
-                      label="Overall Risk"
-                      disabled
-                      sx={{ bgcolor: 'action.disabledBackground' }}
-                    >
-                      <MenuItem value="High">High</MenuItem>
-                      <MenuItem value="Medium">Medium</MenuItem>
-                      <MenuItem value="Low">Low</MenuItem>
-                    </Select>
-                  </FormControl>
-                  {data.overallRisk && (
-                    <Chip
-                      label={`${data.overallRisk}`}
-                      size="small"
-                      color={getRiskColor(data.overallRisk)}
-                    />
-                  )}
-                </Stack>
-
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Risk Level</InputLabel>
-                    <Select
-                      value={data.riskLevel}
-                      label="Risk Level"
-                      onChange={(e) => updateControlData(control.id, 'riskLevel', e.target.value)}
-                    >
-                      <MenuItem value="High">High</MenuItem>
-                      <MenuItem value="Medium">Medium</MenuItem>
-                      <MenuItem value="Low">Low</MenuItem>
-                    </Select>
-                  </FormControl>
-
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Action Priority</InputLabel>
-                    <Select
-                      value={data.actionPriority}
-                      label="Action Priority"
-                      onChange={(e) => updateControlData(control.id, 'actionPriority', e.target.value)}
-                    >
-                      <MenuItem value="High">High</MenuItem>
-                      <MenuItem value="Medium">Medium</MenuItem>
-                      <MenuItem value="Low">Low</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Stack>
-              </Stack>
-            </Box>
-
-            <Divider sx={{ my: 0.5 }} />
-
-            {/* GROUP 4: Mitigation, Workflow, Ownership, Dates */}
-            <Box>
-              <Typography variant="caption" sx={{ fontWeight: 600, mb: 0.75, color: 'text.primary', display: 'block' }}>
-                Mitigation & Workflow
-              </Typography>
-              <Stack spacing={1}>
-                <TextField
-                  label="Recommended Action / Mitigation"
-                  multiline
-                  rows={1.5}
-                  value={data.recommendedMitigation}
-                  onChange={(e) =>
-                    updateControlData(control.id, 'recommendedMitigation', e.target.value)
-                  }
-                  placeholder="Describe recommended actions..."
-                  fullWidth
-                  size="small"
-                  sx={{ mt: 0.5 }}
-                />
-
-                <TextField
-                  label="Target State"
-                  multiline
-                  rows={1.5}
-                  value={data.targetState}
-                  onChange={(e) => updateControlData(control.id, 'targetState', e.target.value)}
-                  placeholder="Describe the desired target state..."
-                  fullWidth
-                  size="small"
-                />
-
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Owner</InputLabel>
-                    <Select
-                      value={data.ownerDepartment}
-                      label="Owner"
-                      onChange={(e) => updateControlData(control.id, 'ownerDepartment', e.target.value)}
-                    >
-                      {departments.map((dept) => (
-                        <MenuItem key={dept} value={dept}>
-                          {dept}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-
-                  <DatePicker
-                    label="Due Date"
-                    value={data.dueDate}
-                    onChange={(date) => updateControlData(control.id, 'dueDate', date)}
-                    slotProps={{
-                      textField: {
-                        fullWidth: true,
-                        size: 'small',
-                      },
-                    }}
-                  />
-                </Stack>
-
-                <FormControl fullWidth size="small">
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    value={data.status}
-                    label="Status"
-                    onChange={(e) => updateControlData(control.id, 'status', e.target.value)}
-                  >
-                    <MenuItem value="Not Started">Not Started</MenuItem>
-                    <MenuItem value="Auto-Filled">Auto-Filled</MenuItem>
-                    <MenuItem value="Needs Review">Needs Review</MenuItem>
-                    <MenuItem value="In Progress">In Progress</MenuItem>
-                    <MenuItem value="Completed">Completed</MenuItem>
-                  </Select>
-                </FormControl>
-
-                {data.status === 'Completed' && (
-                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                    <TextField
-                      label="Reviewed By"
-                      value={data.reviewedBy}
-                      onChange={(e) => updateControlData(control.id, 'reviewedBy', e.target.value)}
-                      fullWidth
-                      size="small"
-                    />
-                    <DatePicker
-                      label="Reviewed On"
-                      value={data.reviewedOn}
-                      onChange={(date) => updateControlData(control.id, 'reviewedOn', date)}
-                      slotProps={{
-                        textField: {
-                          fullWidth: true,
-                          size: 'small',
-                        },
-                      }}
-                    />
-                  </Stack>
-                )}
-
-                <TextField
-                  label="Comments"
-                  multiline
-                  rows={1.5}
-                  value={data.comments}
-                  onChange={(e) => updateControlData(control.id, 'comments', e.target.value)}
-                  placeholder="Add any additional notes..."
-                  fullWidth
-                  size="small"
-                />
-              </Stack>
-            </Box>
-          </Stack>
-        </CardContent>
-      </Card>
+      <Box sx={{ p: 4, textAlign: 'center' }}>
+        <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+          Loading...
+        </Typography>
+      </Box>
     );
-  };
+  }
 
+  // Only show error if we've finished loading and still have no policies
   if (selectedPolicies.length === 0) {
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
@@ -720,6 +928,14 @@ export default function GAPAssessmentDetail() {
       </Box>
     );
   }
+
+  // Calculate reviewed count for current tab only
+  const currentPolicyId = selectedPolicies[activeTab];
+  const currentControls = controlsByPolicy[currentPolicyId] || [];
+  const currentReviewedCount = currentControls.filter((control) => {
+    const data = getControlData(control.id);
+    return data.isReviewed;
+  }).length;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -732,46 +948,15 @@ export default function GAPAssessmentDetail() {
           minWidth: 0,
         }}
       >
-        {/* Header */}
-        <Box
-          sx={{
-            backgroundColor: 'background.paper',
-            pb: 1,
-            mb: 2,
-          }}
-        >
-          <Stack spacing={1}>
-            <Box>
-              <Typography variant="h5" component="h1" sx={{ fontWeight: 600, mb: 0.25, fontSize: '1.25rem' }}>
-                PDPL GAP Assessment – Initial Setup
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                Auto-filled using Pre-Qual + Selected Policies
-              </Typography>
-            </Box>
-            <Box>
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 0.5 }}>
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
-                  {getReviewedCount()} of {allControls.length} controls reviewed
-                </Typography>
-              </Stack>
-              <LinearProgress
-                variant="determinate"
-                value={(getReviewedCount() / allControls.length) * 100}
-                sx={{ height: 6, borderRadius: 1 }}
-              />
-            </Box>
-            <Divider sx={{ my: 0 }} />
-          </Stack>
-        </Box>
-
-        {/* Tabs */}
+        {/* Policy Tabs - Above Header */}
         <Box
           sx={{
             borderBottom: 1,
             borderColor: 'divider',
-            mb: 2,
             backgroundColor: 'background.paper',
+            position: 'sticky',
+            top: 0,
+            zIndex: 11,
           }}
         >
           <Tabs
@@ -779,67 +964,144 @@ export default function GAPAssessmentDetail() {
             onChange={(_, newValue) => setActiveTab(newValue)}
             variant="scrollable"
             scrollButtons="auto"
+            sx={{
+              '& .MuiTab-root': {
+                textTransform: 'none',
+                fontWeight: 500,
+                minHeight: 48,
+                color: 'var(--text-secondary)',
+                backgroundColor: 'var(--primary-muted)',
+                borderRadius: '8px 8px 0 0',
+                marginRight: '8px',
+                border: '1px solid transparent',
+                borderBottom: 'none',
+                '&.Mui-selected': {
+                  color: 'var(--text-primary)',
+                  backgroundColor: 'var(--card-bg)',
+                  border: '1px solid var(--border)',
+                  borderBottom: 'none',
+                  boxShadow: '0 -2px 8px rgba(0,0,0,0.03)',
+                },
+              },
+              '& .MuiTabs-indicator': {
+                display: 'none',
+              },
+            }}
           >
             {selectedPolicies.map((policyId) => (
               <Tab
                 key={policyId}
                 label={policyDisplayNames[policyId] || policyId}
-                sx={{ textTransform: 'none', fontWeight: 500 }}
               />
             ))}
           </Tabs>
         </Box>
 
-        {/* Content - No internal scroll */}
-        <Box sx={{ pr: 1 }}>
-          <Stack spacing={0.5} sx={{ py: 1 }}>
-            {sections.map((section) => {
-              const sectionControls = getControlsBySection(currentControls, section);
-              if (sectionControls.length === 0) return null;
-
-              return (
-                <Accordion key={section} defaultExpanded sx={{ '&:before': { display: 'none' } }}>
-                  <AccordionSummary 
-                    expandIcon={<ExpandMoreIcon />}
-                    sx={{ 
-                      minHeight: 40,
-                      '&.Mui-expanded': { minHeight: 40 },
-                      px: 1.5,
-                      py: 0.5
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>
-                      {section} ({sectionControls.length} {sectionControls.length === 1 ? 'control' : 'controls'})
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails sx={{ px: 1, py: 0.5 }}>
-                    <Stack spacing={0}>
-                      {sectionControls.map((control) => renderControlCard(control))}
-                    </Stack>
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })}
+        {/* Sticky Compact Header */}
+        <Box
+          sx={{
+            position: 'sticky',
+            top: 48,
+            zIndex: 10,
+            backgroundColor: 'background.paper',
+            py: 1.5,
+            mb: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+            <Box>
+              <Typography variant="h6" component="h1" sx={{ fontWeight: 600, fontSize: '16px', lineHeight: 1.2 }}>
+                PDPL GAP – Initial Setup
+              </Typography>
+              <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '12px' }}>
+                Auto-filled using Pre-Qual + Selected Policies
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ color: 'text.secondary', fontSize: '14px', fontWeight: 500 }}>
+              {currentReviewedCount}/{currentControls.length} Reviewed
+            </Typography>
           </Stack>
         </Box>
 
-        {/* Footer - Not sticky */}
+        {/* Content - Full-Width Section Bars with Control Cards */}
+        <Box sx={{ pr: 1 }}>
+          {sections.map((section) => {
+            const sectionControls = getControlsBySection(currentControls, section);
+            if (sectionControls.length === 0) return null;
+
+            return (
+              <Box key={section} sx={{ mt: 3, mb: 2 }}>
+                {/* Full-Width Section Bar */}
+                <Box
+                  sx={{
+                    backgroundColor: 'var(--primary-muted)',
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    borderBottom: 'none',
+                    borderTopLeftRadius: '8px',
+                    borderTopRightRadius: '8px',
+                    px: 2,
+                    py: 1.5,
+                    mb: 0,
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '14px', color: 'text.primary' }}>
+                    {section} ({sectionControls.length} {sectionControls.length === 1 ? 'Control' : 'Controls'})
+                  </Typography>
+                </Box>
+
+                {/* Control Cards */}
+                <Box sx={{ border: '1px solid', borderColor: 'divider', borderTop: 'none', borderBottomLeftRadius: '8px', borderBottomRightRadius: '8px', overflow: 'hidden', backgroundColor: 'background.paper' }}>
+                  {sectionControls.map((control, index) => {
+                    const data = getControlData(control.id);
+                    return (
+                      <Box 
+                        key={control.id} 
+                        sx={{ 
+                          borderBottom: index < sectionControls.length - 1 ? '1px solid' : 'none', 
+                          borderColor: 'divider',
+                          '&:last-child .MuiCard-root': {
+                            borderBottomLeftRadius: '8px',
+                            borderBottomRightRadius: '8px',
+                          },
+                        }}
+                      >
+                        <ControlCard
+                          control={control}
+                          data={data}
+                          onUpdate={(field, value) => updateControlData(control.id, field, value)}
+                        />
+                      </Box>
+                    );
+                  })}
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+
+        {/* Sticky Footer - Minimal */}
         <Box
           sx={{
+            position: 'sticky',
+            bottom: 0,
+            zIndex: 10,
             borderTop: '1px solid',
             borderColor: 'divider',
-            p: 3,
+            p: 1.5,
             mt: 4,
             backgroundColor: 'background.paper',
             display: 'flex',
             gap: 2,
-            justifyContent: 'center',
+            justifyContent: 'flex-end',
           }}
         >
-          <Button variant="contained" color="primary" onClick={handleMarkAsReviewed}>
+          <Button variant="contained" color="primary" onClick={handleMarkAsReviewed} size="small">
             Mark GAP Assessment as Reviewed
           </Button>
-          <Button variant="outlined" onClick={handleExportPDF}>
+          <Button variant="outlined" onClick={handleExportPDF} size="small">
             Export PDF
           </Button>
         </Box>

@@ -4,10 +4,10 @@ import {
   Checkbox,
   FormControlLabel,
   FormGroup,
-  Grid,
   Stack,
   Typography,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
 
 interface WizardStepProcessingProps {
   data: string[];
@@ -46,7 +46,7 @@ export default function WizardStepProcessing({
 
       <Grid container spacing={2}>
         {processingActivities.map((activity) => (
-          <Grid item xs={12} sm={6} key={activity}>
+          <Grid size={{ xs: 12, sm: 6 }} key={activity}>
             <FormControlLabel
               control={
                 <Checkbox

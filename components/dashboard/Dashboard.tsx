@@ -16,7 +16,7 @@ import SideMenu from './SideMenu';
 import AppTheme from './AppTheme';
 import WelcomeScreen from './WelcomeScreen';
 import PreQualificationWizard from './PreQualificationWizard';
-import { isWizardCompleted } from './utils/wizardState';
+import { isWizardCompleted, resetWizard } from './utils/wizardState';
 import {
   chartsCustomizations,
   dataGridCustomizations,
@@ -40,6 +40,18 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
   useEffect(() => {
     // Check wizard completion status on mount
     setWizardCompleted(isWizardCompleted());
+    
+    // Check for reset parameter in URL
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('resetWizard') === 'true') {
+        resetWizard();
+        setWizardCompleted(false);
+        setShowWizard(true);
+        // Clean up URL
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
   }, []);
 
   const handleStartWizard = () => {

@@ -1,33 +1,28 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { useSearchParams, useParams } from 'next/navigation';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import GAPAssessmentDetail from '@/components/dashboard/GAPAssessmentDetail';
 import PolicySelectionScreen from '@/components/dashboard/PolicySelectionScreen';
 import { Box, Typography, Stack } from '@mui/material';
 
-function AssessmentDetailContent({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> | { id: string } 
-}) {
+function AssessmentDetailContent() {
   const searchParams = useSearchParams();
+  const params = useParams();
   const autoFill = searchParams?.get('autoFill') === 'true';
-  
-  // Handle both Promise and direct params (Next.js 15+ vs older versions)
-  const [assessmentId, setAssessmentId] = useState<string | null>(null);
-  
-  useEffect(() => {
-    const resolveParams = async () => {
-      const resolvedParams = params instanceof Promise ? await params : params;
-      setAssessmentId(resolvedParams.id);
-    };
-    resolveParams();
-  }, [params]);
+  const assessmentId = params?.id as string;
 
   if (!assessmentId) {
-    return null; // Loading state
+    return (
+      <DashboardLayout>
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+            Loading...
+          </Typography>
+        </Box>
+      </DashboardLayout>
+    );
   }
 
   // Show GAP Assessment Detail for gap-initial
@@ -67,15 +62,21 @@ function AssessmentDetailContent({
   );
 }
 
-export default function AssessmentDetail({ 
-  params 
-}: { 
-  params: Promise<{ id: string }> | { id: string } 
-}) {
+function AssessmentDetail() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <AssessmentDetailContent params={params} />
+    <Suspense fallback={
+      <DashboardLayout>
+        <Box sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" sx={{ color: 'text.secondary' }}>
+            Loading...
+          </Typography>
+        </Box>
+      </DashboardLayout>
+    }>
+      <AssessmentDetailContent />
     </Suspense>
   );
 }
+
+export default AssessmentDetail;
 
