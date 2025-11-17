@@ -1,5 +1,20 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Design System
+
+**📖 [See DESIGN_SYSTEM.md](./DESIGN_SYSTEM.md) for complete styling guidelines and theme documentation.**
+
+This project uses the MUI Dashboard Custom Theme. All components should follow the design system patterns outlined in the guide above.
+
+### Quick Reference
+
+- **Theme**: Custom Theme (MUI Dashboard template)
+- **Primary Color**: `hsl(210, 98%, 48%)` (Brand Blue)
+- **Font**: Roboto
+- **Theme Provider**: `components/dashboard/AppTheme.tsx`
+- **Design Tokens**: `components/dashboard/themePrimitives.ts`
+- **Component Customizations**: `components/dashboard/theme/customizations.ts`
+
 ## Getting Started
 
 First, run the development server:

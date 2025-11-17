@@ -1,0 +1,47 @@
+# Cursor Rules for MUI Dashboard Project
+
+## Design System & Styling
+
+- **ALWAYS** follow the design system guidelines in `DESIGN_SYSTEM.md`
+- **ALWAYS** use the `AppTheme` provider from `components/dashboard/AppTheme.tsx`
+- **ALWAYS** use theme colors from `theme.palette.*` or CSS variables, never hardcode colors
+- **ALWAYS** use MUI components and follow their styling patterns
+- **ALWAYS** use the Custom Theme color palette (not Material Design 2 defaults)
+
+## Theme Configuration
+
+- Primary colors use HSL values from `themePrimitives.ts`
+- Success/Error chips use light pastel backgrounds (see `feedbackCustomizations`)
+- Typography uses Roboto font family
+- Spacing follows MUI's 8px base unit
+
+## Component Patterns
+
+- Use `Card variant="outlined"` for content containers
+- Use `Chip size="small"` with `color="success"` or `color="error"` for trend indicators
+- Use `Typography` variants (h4, h6, body2, caption) for text
+- Use `Stack` with `spacing={2}` for layout
+- Use `sx` prop for styling, not inline styles
+
+## Layout Rules
+
+- Use `px: 3` (padding-x) instead of `mx: 3` (margin-x) for content containers
+- Always set `minWidth: 0` on flex children to prevent overflow
+- Use `width: '100%'` with `maxWidth: '100vw'` for root containers
+- Set `overflowX: 'hidden'` on main content areas
+
+## File Structure
+
+- Dashboard components: `components/dashboard/`
+- Theme files: `components/dashboard/theme/` and `components/dashboard/themePrimitives.ts`
+- Always use absolute imports with `@/` prefix
+
+## When Creating New Components
+
+1. Wrap with `AppTheme` provider
+2. Use theme colors and typography
+3. Follow existing component patterns
+4. Add customizations to `theme/customizations.ts` if needed
+5. Reference `DESIGN_SYSTEM.md` for guidelines
+
+
