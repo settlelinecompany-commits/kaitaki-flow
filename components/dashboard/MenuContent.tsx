@@ -13,6 +13,7 @@ import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 import TaskRoundedIcon from '@mui/icons-material/TaskRounded';
 import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
+import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
 
 interface NavItem {
   text: string;
@@ -22,6 +23,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { text: 'Overview', icon: DashboardRoundedIcon, path: '/' },
+  { text: 'Kai Assistant', icon: ChatRoundedIcon, path: '/kai' },
   { text: 'Assessments', icon: AssignmentRoundedIcon, path: '/assessments' },
   { text: 'ROPA', icon: DescriptionRoundedIcon, path: '/ropa' },
   { text: 'Risks', icon: WarningRoundedIcon, path: '/risks' },
@@ -91,7 +93,7 @@ export default function MenuContent({ collapsed = false }: MenuContentProps) {
                 }}
               >
                 <IconComponent />
-              </ListItemIcon>
+            </ListItemIcon>
               {!collapsed && (
                 <ListItemText 
                   primary={item.text}
@@ -101,8 +103,8 @@ export default function MenuContent({ collapsed = false }: MenuContentProps) {
                   }}
                 />
               )}
-            </ListItemButton>
-          </ListItem>
+          </ListItemButton>
+        </ListItem>
         );
 
         if (collapsed) {

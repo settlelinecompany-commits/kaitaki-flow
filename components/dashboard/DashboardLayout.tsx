@@ -11,6 +11,9 @@ import Stack from '@mui/material/Stack';
 import AppNavbar from './AppNavbar';
 import SideMenu from './SideMenu';
 import AppTheme from './AppTheme';
+import { KaiProvider } from './KaiContext';
+import KaiPanel from './KaiPanel';
+import KaiTriggerButton from './KaiTriggerButton';
 import {
   chartsCustomizations,
   dataGridCustomizations,
@@ -37,60 +40,66 @@ export default function DashboardLayout({
   disableCustomTheme,
 }: DashboardLayoutProps) {
   return (
-    <AppTheme disableCustomTheme={disableCustomTheme} themeComponents={xThemeComponents}>
-      <CssBaseline enableColorScheme />
-      <Box
-        sx={{
-          display: 'flex',
-          minHeight: '100vh',
-          width: '100%',
-          maxWidth: '100vw',
-          overflow: 'hidden',
-        }}
-      >
-        <SideMenu />
+    <KaiProvider>
+      <AppTheme disableCustomTheme={disableCustomTheme} themeComponents={xThemeComponents}>
+        <CssBaseline enableColorScheme />
         <Box
           sx={{
             display: 'flex',
-            flexDirection: 'column',
-            flexGrow: 1,
-            minWidth: 0,
+            minHeight: '100vh',
+            width: '100%',
+            maxWidth: '100vw',
             overflow: 'hidden',
           }}
         >
-          <AppNavbar />
-          {/* Main content */}
+          <SideMenu />
           <Box
-            component="main"
-            sx={(theme) => ({
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
               flexGrow: 1,
-              backgroundColor: theme.vars
-                ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
-                : alpha(theme.palette.background.default, 1),
-              overflow: 'auto',
-              overflowX: 'hidden',
               minWidth: 0,
-              width: '100%',
-            })}
+              overflow: 'hidden',
+            }}
           >
-            <Stack
-              spacing={2}
-              sx={{
-                alignItems: 'flex-start',
-                px: 3,
-                pb: 5,
-                pt: { xs: 8, md: 0 },
-                width: '100%',
-                maxWidth: '100%',
+            <AppNavbar />
+            {/* Main content */}
+            <Box
+              component="main"
+              sx={(theme) => ({
+                flexGrow: 1,
+                backgroundColor: theme.vars
+                  ? `rgba(${theme.vars.palette.background.defaultChannel} / 1)`
+                  : alpha(theme.palette.background.default, 1),
+                overflow: 'auto',
+                overflowX: 'hidden',
                 minWidth: 0,
-              }}
+                width: '100%',
+              })}
             >
-              {children}
-            </Stack>
+              <Stack
+                spacing={2}
+                sx={{
+                  alignItems: 'flex-start',
+                  px: 3,
+                  pb: 5,
+                  pt: { xs: 8, md: 0 },
+                  width: '100%',
+                  maxWidth: '100%',
+                  minWidth: 0,
+                }}
+              >
+                {children}
+              </Stack>
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </AppTheme>
+        {/* Kai Panel */}
+        <KaiPanel />
+        {/* Kai Trigger Button */}
+        <KaiTriggerButton />
+      </AppTheme>
+    </KaiProvider>
   );
 }
 

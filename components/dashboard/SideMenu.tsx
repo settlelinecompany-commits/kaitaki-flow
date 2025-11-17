@@ -68,7 +68,7 @@ export default function SideMenu() {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            py: 3,
+            py: 2.5,
             px: collapsed ? 1 : 2,
             position: 'relative',
           }}

@@ -9,9 +9,11 @@ import { tabsClasses } from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import ChatIcon from '@mui/icons-material/Chat';
 import SideMenuMobile from './SideMenuMobile';
 import MenuButton from './MenuButton';
 import ColorModeIconDropdown from './ColorModeIconDropdown';
+import { useKai } from './KaiContext';
 
 const Toolbar = styled(MuiToolbar)({
   width: '100%',
@@ -29,8 +31,34 @@ const Toolbar = styled(MuiToolbar)({
   },
 });
 
+function CustomIcon() {
+  return (
+    <Box
+      sx={{
+        width: '1.5rem',
+        height: '1.5rem',
+        bgcolor: 'black',
+        borderRadius: '999px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'center',
+        backgroundImage:
+          'linear-gradient(135deg, hsl(210, 98%, 60%) 0%, hsl(210, 100%, 35%) 100%)',
+        color: 'hsla(210, 100%, 95%, 0.9)',
+        border: '1px solid',
+        borderColor: 'hsl(210, 100%, 55%)',
+        boxShadow: 'inset 0 2px 5px rgba(255, 255, 255, 0.3)',
+      }}
+    >
+      <DashboardRoundedIcon color="inherit" sx={{ fontSize: '1rem' }} />
+    </Box>
+  );
+}
+
 export default function AppNavbar() {
   const [open, setOpen] = React.useState(false);
+  const { isOpen, togglePanel } = useKai();
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
@@ -69,6 +97,16 @@ export default function AppNavbar() {
               Dashboard
             </Typography>
           </Stack>
+          <MenuButton
+            aria-label="Open Kai"
+            onClick={togglePanel}
+            sx={{
+              backgroundColor: isOpen ? 'primary.main' : 'transparent',
+              color: isOpen ? 'primary.contrastText' : 'inherit',
+            }}
+          >
+            <ChatIcon />
+          </MenuButton>
           <ColorModeIconDropdown />
           <MenuButton aria-label="menu" onClick={toggleDrawer(true)}>
             <MenuRoundedIcon />
@@ -77,30 +115,5 @@ export default function AppNavbar() {
         </Stack>
       </Toolbar>
     </AppBar>
-  );
-}
-
-export function CustomIcon() {
-  return (
-    <Box
-      sx={{
-        width: '1.5rem',
-        height: '1.5rem',
-        bgcolor: 'black',
-        borderRadius: '999px',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
-        backgroundImage:
-          'linear-gradient(135deg, hsl(210, 98%, 60%) 0%, hsl(210, 100%, 35%) 100%)',
-        color: 'hsla(210, 100%, 95%, 0.9)',
-        border: '1px solid',
-        borderColor: 'hsl(210, 100%, 55%)',
-        boxShadow: 'inset 0 2px 5px rgba(255, 255, 255, 0.3)',
-      }}
-    >
-      <DashboardRoundedIcon color="inherit" sx={{ fontSize: '1rem' }} />
-    </Box>
   );
 }

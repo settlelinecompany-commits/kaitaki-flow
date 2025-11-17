@@ -16,6 +16,9 @@ import SideMenu from './SideMenu';
 import AppTheme from './AppTheme';
 import WelcomeScreen from './WelcomeScreen';
 import PreQualificationWizard from './PreQualificationWizard';
+import { KaiProvider } from './KaiContext';
+import KaiPanel from './KaiPanel';
+import KaiTriggerButton from './KaiTriggerButton';
 import { isWizardCompleted, resetWizard } from './utils/wizardState';
 import {
   chartsCustomizations,
@@ -82,51 +85,57 @@ export default function Dashboard(props: { disableCustomTheme?: boolean }) {
 
   // Show dashboard with sidebar if wizard completed
   return (
-    <AppTheme {...props} themeComponents={xThemeComponents}>
-      <CssBaseline enableColorScheme />
-      <Box 
-        sx={{ 
-          display: 'flex',
-          minHeight: '100vh',
-          width: '100%',
-          maxWidth: '100vw',
-          overflow: 'hidden',
-          backgroundColor: '#F8F9FA', // --bg
-        }}
-      >
-        <SideMenu />
-        <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, overflow: 'hidden' }}>
-          <AppNavbar />
-          {/* Main content */}
-          <Box
-            component="main"
-              sx={(theme) => ({
-                flexGrow: 1,
-                backgroundColor: '#F8F9FA', // --bg
-                overflow: 'auto',
-                overflowX: 'hidden',
-                minWidth: 0,
-                width: '100%',
-              })}
-          >
-            <Stack
-              spacing={2}
-              sx={{
-                alignItems: 'flex-start',
-                px: 3,
-                pb: 5,
-                pt: { xs: 8, md: 0 },
-                width: '100%',
-                maxWidth: '100%',
-                minWidth: 0,
-              }}
+    <KaiProvider>
+      <AppTheme {...props} themeComponents={xThemeComponents}>
+        <CssBaseline enableColorScheme />
+        <Box 
+          sx={{ 
+            display: 'flex',
+            minHeight: '100vh',
+            width: '100%',
+            maxWidth: '100vw',
+            overflow: 'hidden',
+            backgroundColor: '#F8F9FA', // --bg
+          }}
+        >
+          <SideMenu />
+          <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1, minWidth: 0, overflow: 'hidden' }}>
+            <AppNavbar />
+            {/* Main content */}
+            <Box
+              component="main"
+                sx={(theme) => ({
+                  flexGrow: 1,
+                  backgroundColor: '#F8F9FA', // --bg
+                  overflow: 'auto',
+                  overflowX: 'hidden',
+                  minWidth: 0,
+                  width: '100%',
+                })}
             >
-              <Header />
-              <MainGrid />
-            </Stack>
+              <Stack
+                spacing={2}
+                sx={{
+                  alignItems: 'flex-start',
+                  px: 3,
+                  pb: 5,
+                  pt: { xs: 8, md: 0 },
+                  width: '100%',
+                  maxWidth: '100%',
+                  minWidth: 0,
+                }}
+              >
+                <Header />
+                <MainGrid />
+              </Stack>
+            </Box>
           </Box>
         </Box>
-      </Box>
-    </AppTheme>
+        {/* Kai Panel */}
+        <KaiPanel />
+        {/* Kai Trigger Button */}
+        <KaiTriggerButton />
+      </AppTheme>
+    </KaiProvider>
   );
 }
