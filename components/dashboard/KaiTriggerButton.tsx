@@ -1,7 +1,7 @@
 'use client'
 
-import { Fab } from '@mui/material';
-import ChatIcon from '@mui/icons-material/Chat';
+import { Fab, Box } from '@mui/material';
+import Image from 'next/image';
 import { useKai } from './KaiContext';
 
 export default function KaiTriggerButton() {
@@ -22,9 +22,27 @@ export default function KaiTriggerButton() {
         bottom: 24,
         right: 24,
         zIndex: 1000,
+        width: 56,
+        height: 56,
       }}
     >
-      <ChatIcon />
+      <Box
+        sx={{
+          position: 'relative',
+          width: 24,
+          height: 24,
+        }}
+      >
+        <Image
+          src="/kaitaki_HQ.png"
+          alt="Kai"
+          fill
+          style={{
+            objectFit: 'contain',
+          }}
+          priority
+        />
+      </Box>
     </Fab>
   );
 }

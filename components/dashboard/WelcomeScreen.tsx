@@ -3,6 +3,7 @@
 import { Box, Button, Container, Stack, Typography } from '@mui/material';
 import AppTheme from './AppTheme';
 import CssBaseline from '@mui/material/CssBaseline';
+import Image from 'next/image';
 
 interface WelcomeScreenProps {
   onStart: () => void;
@@ -24,6 +25,24 @@ export default function WelcomeScreen({ onStart }: WelcomeScreenProps) {
       >
         <Container maxWidth="md">
           <Stack spacing={4} alignItems="center" textAlign="center">
+            <Box
+              sx={{
+                position: 'relative',
+                width: { xs: 200, md: 280 },
+                height: { xs: 60, md: 84 },
+                mb: 2,
+              }}
+            >
+              <Image
+                src="/kaitaki_HQ.png"
+                alt="Kaitaki"
+                fill
+                style={{
+                  objectFit: 'contain',
+                }}
+                priority
+              />
+            </Box>
             <Typography
               variant="h2"
               component="h1"

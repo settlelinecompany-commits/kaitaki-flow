@@ -1,0 +1,814 @@
+'use client'
+
+import { useState } from 'react';
+import {
+  Box,
+  Stack,
+  Typography,
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  Select,
+  MenuItem,
+  FormControl,
+  Chip,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Divider,
+} from '@mui/material';
+import StatCard from './StatCard';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import PowerpointIcon from '@mui/icons-material/Description';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+
+const mockStats = [
+  {
+    title: 'Overall Privacy Score',
+    value: '82',
+    interval: 'This Month',
+    trend: 'up' as const,
+    data: [78, 79, 80, 81, 82],
+  },
+  {
+    title: 'High Risks',
+    value: '6',
+    interval: 'vs last month',
+    trend: 'down' as const,
+    data: [8, 7, 6],
+  },
+  {
+    title: 'Medium Risks',
+    value: '12',
+    interval: 'vs last month',
+    trend: 'down' as const,
+    data: [15, 14, 12],
+  },
+  {
+    title: 'Assessments Completed',
+    value: '8',
+    interval: 'This Period',
+    trend: 'up' as const,
+    data: [5, 6, 7, 8],
+  },
+  {
+    title: 'ROPA Updates',
+    value: '24',
+    interval: 'This Period',
+    trend: 'up' as const,
+    data: [18, 20, 22, 24],
+  },
+  {
+    title: 'Tasks Closed / SLA',
+    value: '94%',
+    interval: 'This Period',
+    trend: 'up' as const,
+    data: [88, 90, 92, 94],
+  },
+];
+
+const riskTrendData = {
+  high: { thisMonth: 6, lastMonth: 8 },
+  medium: { thisMonth: 12, lastMonth: 15 },
+  low: { thisMonth: 18, lastMonth: 16 },
+};
+
+const assessmentActivity = {
+  dpias: { count: 3, change: +1 },
+  lias: { count: 2, change: 0 },
+  tias: { count: 3, change: +2 },
+};
+
+const ropaActivity = {
+  new: 8,
+  modified: 16,
+  overdue: 3,
+};
+
+const kpiData = [
+  { metric: 'SLA Adherence', value: '94%', target: '95%' },
+  { metric: 'Average DPIA Completion Time', value: '12 days', target: '14 days' },
+  { metric: 'Average Task Closure Time', value: '5.2 days', target: '7 days' },
+  { metric: 'Overdue Items', value: '3', target: '0' },
+  { metric: 'Evidence Uploads', value: '142', target: 'N/A' },
+];
+
+export default function AnalyticsReportsPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState('this-month');
+
+  const getMaxValue = () => {
+    const allValues = [
+      riskTrendData.high.thisMonth,
+      riskTrendData.high.lastMonth,
+      riskTrendData.medium.thisMonth,
+      riskTrendData.medium.lastMonth,
+      riskTrendData.low.thisMonth,
+      riskTrendData.low.lastMonth,
+    ];
+    return Math.max(...allValues, 1);
+  };
+
+  const maxValue = getMaxValue();
+
+  const renderRiskBar = (value: number, maxValue: number, color: string, label: string) => {
+    const percentage = (value / maxValue) * 100;
+    return (
+      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, flex: 1 }}>
+        <Box
+          sx={{
+            width: '100%',
+            height: 160,
+            backgroundColor: 'rgba(0, 0, 0, 0.04)',
+            borderRadius: 2,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'flex-end',
+          }}
+        >
+          <Box
+            sx={{
+              width: '100%',
+              height: `${percentage}%`,
+              backgroundColor: color,
+              borderRadius: '8px 8px 0 0',
+              transition: 'height 0.3s ease',
+            }}
+          />
+        </Box>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              fontSize: '1.875rem',
+              color: 'text.primary',
+              mb: 0.5,
+            }}
+          >
+            {value}
+          </Typography>
+          <Typography
+            variant="caption"
+            sx={{
+              color: 'text.secondary',
+              fontSize: '0.75rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontWeight: 500,
+            }}
+          >
+            {label}
+          </Typography>
+        </Box>
+      </Box>
+    );
+  };
+
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: '1200px',
+        mx: 'auto',
+        px: 8,
+        py: 4,
+      }}
+    >
+      <Stack spacing={4}>
+        {/* Header */}
+        <Stack spacing={1}>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 600,
+              fontSize: '1.5rem',
+              color: 'text.primary',
+            }}
+          >
+            Analytics & Reports
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              color: 'text.secondary',
+              fontSize: '0.875rem',
+            }}
+          >
+            Monthly privacy posture, KPIs, and trend analytics generated by Kai.
+          </Typography>
+          <Box sx={{ mt: 1 }}>
+            <FormControl size="small" sx={{ width: 200 }}>
+              <Select
+                value={selectedPeriod}
+                onChange={(e) => setSelectedPeriod(e.target.value)}
+                sx={{
+                  borderRadius: 2,
+                }}
+              >
+                <MenuItem value="this-month">This Month</MenuItem>
+                <MenuItem value="last-month">Last Month</MenuItem>
+                <MenuItem value="last-3-months">Last 3 Months</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+        </Stack>
+
+        {/* Summary Statistics */}
+        <Grid container spacing={2}>
+          {mockStats.map((stat, index) => (
+            <Grid key={index} size={{ xs: 12, sm: 6, lg: 4 }}>
+              <StatCard {...stat} />
+            </Grid>
+          ))}
+        </Grid>
+
+        {/* Risk Trend Comparison */}
+        <Card
+          variant="outlined"
+          sx={{
+            borderRadius: 3,
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Stack spacing={3}>
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '1.25rem',
+                    color: 'text.primary',
+                    mb: 0.5,
+                  }}
+                >
+                  Risk Trend Comparison
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  This month vs. last month
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+                  gap: 4,
+                  pt: 2,
+                }}
+              >
+                {/* This Month */}
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'text.secondary',
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      fontWeight: 600,
+                      mb: 3,
+                      display: 'block',
+                    }}
+                  >
+                    This Month
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 3 }}>
+                    {renderRiskBar(riskTrendData.high.thisMonth, maxValue, '#f44336', 'High')}
+                    {renderRiskBar(riskTrendData.medium.thisMonth, maxValue, '#ff9800', 'Medium')}
+                    {renderRiskBar(riskTrendData.low.thisMonth, maxValue, '#4caf50', 'Low')}
+                  </Box>
+                </Box>
+
+                {/* Last Month */}
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'text.secondary',
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      fontWeight: 600,
+                      mb: 3,
+                      display: 'block',
+                    }}
+                  >
+                    Last Month
+                  </Typography>
+                  <Box sx={{ display: 'flex', gap: 3 }}>
+                    {renderRiskBar(riskTrendData.high.lastMonth, maxValue, '#f44336', 'High')}
+                    {renderRiskBar(riskTrendData.medium.lastMonth, maxValue, '#ff9800', 'Medium')}
+                    {renderRiskBar(riskTrendData.low.lastMonth, maxValue, '#4caf50', 'Low')}
+                  </Box>
+                </Box>
+              </Box>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        {/* Assessment & ROPA Activity Trends */}
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card
+              variant="outlined"
+              sx={{
+                borderRadius: 3,
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+                border: '1px solid',
+                borderColor: 'divider',
+                height: '100%',
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '1.25rem',
+                        color: 'text.primary',
+                        mb: 0.5,
+                      }}
+                    >
+                      Assessment Activity
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.secondary',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      Completed assessments this period
+                    </Typography>
+                  </Box>
+                  <Stack spacing={2.5}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        DPIAs Completed
+                      </Typography>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: '1.875rem',
+                            color: 'text.primary',
+                          }}
+                        >
+                          {assessmentActivity.dpias.count}
+                        </Typography>
+                        {assessmentActivity.dpias.change !== 0 && (
+                          <Chip
+                            icon={
+                              assessmentActivity.dpias.change > 0 ? (
+                                <TrendingUpIcon sx={{ fontSize: '0.875rem !important' }} />
+                              ) : (
+                                <TrendingDownIcon sx={{ fontSize: '0.875rem !important' }} />
+                              )
+                            }
+                            label={
+                              assessmentActivity.dpias.change > 0
+                                ? `+${assessmentActivity.dpias.change}`
+                                : assessmentActivity.dpias.change
+                            }
+                            size="small"
+                            color={assessmentActivity.dpias.change > 0 ? 'success' : 'error'}
+                            sx={{
+                              height: 24,
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Stack>
+                    <Divider />
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        LIAs Completed
+                      </Typography>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: '1.875rem',
+                            color: 'text.primary',
+                          }}
+                        >
+                          {assessmentActivity.lias.count}
+                        </Typography>
+                        {assessmentActivity.lias.change !== 0 && (
+                          <Chip
+                            icon={
+                              assessmentActivity.lias.change > 0 ? (
+                                <TrendingUpIcon sx={{ fontSize: '0.875rem !important' }} />
+                              ) : (
+                                <TrendingDownIcon sx={{ fontSize: '0.875rem !important' }} />
+                              )
+                            }
+                            label={
+                              assessmentActivity.lias.change > 0
+                                ? `+${assessmentActivity.lias.change}`
+                                : assessmentActivity.lias.change
+                            }
+                            size="small"
+                            color={assessmentActivity.lias.change > 0 ? 'success' : 'error'}
+                            sx={{
+                              height: 24,
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Stack>
+                    <Divider />
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        TIAs Completed
+                      </Typography>
+                      <Stack direction="row" spacing={1.5} alignItems="center">
+                        <Typography
+                          variant="h4"
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: '1.875rem',
+                            color: 'text.primary',
+                          }}
+                        >
+                          {assessmentActivity.tias.count}
+                        </Typography>
+                        {assessmentActivity.tias.change !== 0 && (
+                          <Chip
+                            icon={
+                              assessmentActivity.tias.change > 0 ? (
+                                <TrendingUpIcon sx={{ fontSize: '0.875rem !important' }} />
+                              ) : (
+                                <TrendingDownIcon sx={{ fontSize: '0.875rem !important' }} />
+                              )
+                            }
+                            label={
+                              assessmentActivity.tias.change > 0
+                                ? `+${assessmentActivity.tias.change}`
+                                : assessmentActivity.tias.change
+                            }
+                            size="small"
+                            color={assessmentActivity.tias.change > 0 ? 'success' : 'error'}
+                            sx={{
+                              height: 24,
+                              fontSize: '0.75rem',
+                              fontWeight: 500,
+                            }}
+                          />
+                        )}
+                      </Stack>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Card
+              variant="outlined"
+              sx={{
+                borderRadius: 3,
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+                border: '1px solid',
+                borderColor: 'divider',
+                height: '100%',
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Stack spacing={3}>
+                  <Box>
+                    <Typography
+                      variant="h6"
+                      sx={{
+                        fontWeight: 600,
+                        fontSize: '1.25rem',
+                        color: 'text.primary',
+                        mb: 0.5,
+                      }}
+                    >
+                      ROPA Updates
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: 'text.secondary',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      Processing activities updated this period
+                    </Typography>
+                  </Box>
+                  <Stack spacing={2.5}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        New Processing Activities
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: '1.875rem',
+                          color: 'text.primary',
+                        }}
+                      >
+                        {ropaActivity.new}
+                      </Typography>
+                    </Stack>
+                    <Divider />
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        Modified Entries
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: '1.875rem',
+                          color: 'text.primary',
+                        }}
+                      >
+                        {ropaActivity.modified}
+                      </Typography>
+                    </Stack>
+                    <Divider />
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: 'text.secondary',
+                          fontSize: '0.875rem',
+                        }}
+                      >
+                        Overdue Entries
+                      </Typography>
+                      <Typography
+                        variant="h4"
+                        sx={{
+                          fontWeight: 700,
+                          fontSize: '1.875rem',
+                          color: 'error.main',
+                        }}
+                      >
+                        {ropaActivity.overdue}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Privacy Team KPIs */}
+        <Card
+          variant="outlined"
+          sx={{
+            borderRadius: 3,
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Stack spacing={3}>
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '1.25rem',
+                    color: 'text.primary',
+                    mb: 0.5,
+                  }}
+                >
+                  Privacy Team KPIs
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Key performance indicators and targets
+                </Typography>
+              </Box>
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow
+                      sx={{
+                        backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                        '& .MuiTableCell-head': {
+                          fontWeight: 600,
+                          fontSize: '0.875rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          color: 'text.secondary',
+                          borderBottom: '2px solid',
+                          borderColor: 'divider',
+                        },
+                      }}
+                    >
+                      <TableCell>Metric</TableCell>
+                      <TableCell align="right">Value</TableCell>
+                      <TableCell align="right">Target</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {kpiData.map((kpi, index) => (
+                      <TableRow
+                        key={kpi.metric}
+                        hover
+                        sx={{
+                          '&:last-child td': { borderBottom: 0 },
+                        }}
+                      >
+                        <TableCell>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontSize: '0.875rem',
+                              color: 'text.primary',
+                            }}
+                          >
+                            {kpi.metric}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 600,
+                              fontSize: '0.875rem',
+                              color: 'text.primary',
+                            }}
+                          >
+                            {kpi.value}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontSize: '0.875rem',
+                              color: 'text.secondary',
+                            }}
+                          >
+                            {kpi.target}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Stack>
+          </CardContent>
+        </Card>
+
+        {/* Export Section */}
+        <Card
+          variant="outlined"
+          sx={{
+            borderRadius: 3,
+            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+            border: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <CardContent sx={{ p: 3 }}>
+            <Stack spacing={3}>
+              <Box>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '1.25rem',
+                    color: 'text.primary',
+                    mb: 0.5,
+                  }}
+                >
+                  Export Monthly Report
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: 'text.secondary',
+                    fontSize: '0.875rem',
+                  }}
+                >
+                  Download reports in your preferred format
+                </Typography>
+              </Box>
+              <Stack
+                direction="row"
+                spacing={2}
+                sx={{
+                  flexWrap: 'wrap',
+                  gap: 2,
+                }}
+              >
+                <Button
+                  variant="outlined"
+                  startIcon={<PictureAsPdfIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  Export as PDF
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<PowerpointIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  Export as PPT
+                </Button>
+                <Button
+                  variant="outlined"
+                  startIcon={<FileDownloadIcon />}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                  }}
+                >
+                  Download CSV
+                </Button>
+              </Stack>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Stack>
+    </Box>
+  );
+}

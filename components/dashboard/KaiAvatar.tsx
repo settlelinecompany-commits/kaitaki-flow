@@ -1,6 +1,7 @@
 'use client'
 
 import { Box, Typography } from '@mui/material';
+import Image from 'next/image';
 
 interface KaiAvatarProps {
   size?: number;
@@ -25,20 +26,36 @@ export default function KaiAvatar({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: isKai 
-          ? 'primary.main' 
+          ? 'transparent' 
           : 'grey.400',
         color: 'white',
         flexShrink: 0,
+        overflow: 'hidden',
+        position: 'relative',
       }}
     >
-      <Typography
-        sx={{
-          fontSize: size * 0.4,
-          fontWeight: 600,
-        }}
-      >
-        {isKai ? 'K' : initials}
-      </Typography>
+      {isKai ? (
+        <Image
+          src="/kaitaki_HQ.png"
+          alt="Kaitaki Logo"
+          width={size}
+          height={size}
+          style={{
+            objectFit: 'contain',
+            width: '100%',
+            height: '100%',
+          }}
+        />
+      ) : (
+        <Typography
+          sx={{
+            fontSize: size * 0.4,
+            fontWeight: 600,
+          }}
+        >
+          {initials}
+        </Typography>
+      )}
     </Box>
   );
 }

@@ -12,7 +12,6 @@ import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
 import DescriptionRoundedIcon from '@mui/icons-material/DescriptionRounded';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
 import TaskRoundedIcon from '@mui/icons-material/TaskRounded';
-import AdminPanelSettingsRoundedIcon from '@mui/icons-material/AdminPanelSettingsRounded';
 import ChatRoundedIcon from '@mui/icons-material/ChatRounded';
 
 interface NavItem {
@@ -25,17 +24,18 @@ const navItems: NavItem[] = [
   { text: 'Overview', icon: DashboardRoundedIcon, path: '/' },
   { text: 'Kai Assistant', icon: ChatRoundedIcon, path: '/kai' },
   { text: 'Assessments', icon: AssignmentRoundedIcon, path: '/assessments' },
+  { text: 'Voice Assessment', icon: ChatRoundedIcon, path: '/voice-assessment' },
   { text: 'ROPA', icon: DescriptionRoundedIcon, path: '/ropa' },
-  { text: 'Risks', icon: WarningRoundedIcon, path: '/risks' },
+  { text: 'Risks', icon: WarningRoundedIcon, path: '/risks/libraries' },
+  { text: 'Analytics & Reports', icon: DashboardRoundedIcon, path: '/reports' },
   { text: 'Tasks & Approvals', icon: TaskRoundedIcon, path: '/tasks' },
-  { text: 'Governance', icon: AdminPanelSettingsRoundedIcon, path: '/governance' },
 ];
 
 interface MenuContentProps {
   collapsed?: boolean;
 }
 
-export default function MenuContent({ collapsed = false }: MenuContentProps) {
+function MenuContent({ collapsed = false }: MenuContentProps) {
   const router = useRouter();
   const pathname = usePathname();
 
@@ -120,3 +120,5 @@ export default function MenuContent({ collapsed = false }: MenuContentProps) {
     </List>
   );
 }
+
+export default MenuContent;

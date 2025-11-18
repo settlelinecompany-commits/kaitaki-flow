@@ -363,9 +363,9 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
                 {agentInsight}
               </Typography>
               <Stack direction="row" spacing={1} alignItems="center">
-                <Chip
+              <Chip
                   label={`Confidence: ${data.confidence || 'Medium'}`}
-                  size="small"
+                size="small"
                   color={getConfidenceColor(data.confidence || 'Medium')}
                   sx={{ fontSize: '11px', height: 20 }}
                 />
@@ -375,10 +375,10 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
                     size="small"
                     color={getRiskColor(data.overallRisk)}
                     sx={{ fontSize: '11px', height: 20 }}
-                  />
-                )}
+              />
+            )}
               </Stack>
-            </Stack>
+          </Stack>
           </Box>
         </Box>
 
@@ -410,19 +410,19 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
             </Typography>
           </AccordionSummary>
           {expandedSections.requirement && (
-            <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
-              <Stack spacing={1.5}>
+          <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
+            <Stack spacing={1.5}>
                 {/* Requirement Block */}
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5, fontSize: '14px', lineHeight: '20px' }}>
-                    {control.requirement}
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5, fontSize: '14px', lineHeight: '20px' }}>
+                  {control.requirement}
+                </Typography>
+                {control.assessmentQuestion && (
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '12px', lineHeight: '18px' }}>
+                    {control.assessmentQuestion}
                   </Typography>
-                  {control.assessmentQuestion && (
-                    <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '12px', lineHeight: '18px' }}>
-                      {control.assessmentQuestion}
-                    </Typography>
-                  )}
-                </Box>
+                )}
+              </Box>
 
                 {/* Answer Block */}
                 <Box>
@@ -453,27 +453,27 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
                 >
                   {/* Left Column - Qualitative */}
                   <Box>
-                    <TextField
-                      label="Current State"
-                      multiline
-                      rows={2}
-                      value={data.currentState}
-                      onChange={(e) => onUpdate('currentState', e.target.value)}
-                      placeholder="Describe the current state..."
-                      fullWidth
-                      size="small"
+              <TextField
+                label="Current State"
+                multiline
+                rows={2}
+                value={data.currentState}
+                onChange={(e) => onUpdate('currentState', e.target.value)}
+                placeholder="Describe the current state..."
+                fullWidth
+                size="small"
                       sx={{ fontSize: '14px', mb: 1.5 }}
-                    />
+              />
                     <Button variant="outlined" size="small" sx={{ py: 0.25, px: 1, fontSize: '12px' }}>
                       Attach Evidence
-                    </Button>
+              </Button>
                   </Box>
 
                   {/* Right Column - Quantitative (empty for Requirement section) */}
                   <Box />
                 </Box>
-              </Stack>
-            </AccordionDetails>
+            </Stack>
+          </AccordionDetails>
           )}
         </Accordion>
 
@@ -505,7 +505,7 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
             </Typography>
           </AccordionSummary>
           {expandedSections.gap && (
-            <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
+          <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
               <Box
                 sx={{
                   display: 'grid',
@@ -516,13 +516,13 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
               >
                 {/* Left Column - Qualitative */}
                 <Box>
-                  <TextField
+              <TextField
                     label="Gap Description"
-                    multiline
+                multiline
                     rows={3}
-                    value={data.gapIdentified}
-                    onChange={(e) => onUpdate('gapIdentified', e.target.value)}
-                    placeholder="Describe any gaps..."
+                value={data.gapIdentified}
+                onChange={(e) => onUpdate('gapIdentified', e.target.value)}
+                placeholder="Describe any gaps..."
                     fullWidth
                     size="small"
                     sx={{ fontSize: '14px', mb: 1.5 }}
@@ -534,70 +534,70 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
                     value={data.recommendedMitigation}
                     onChange={(e) => onUpdate('recommendedMitigation', e.target.value)}
                     placeholder="Describe recommended actions..."
-                    fullWidth
-                    size="small"
-                    sx={{ fontSize: '14px' }}
-                  />
+                fullWidth
+                size="small"
+                sx={{ fontSize: '14px' }}
+              />
                 </Box>
 
                 {/* Right Column - Quantitative */}
                 <Box>
                   <Stack spacing={1.5}>
-                    <FormControl fullWidth size="small">
+                  <FormControl fullWidth size="small">
                       <InputLabel>Risk Level</InputLabel>
-                      <Select
+                    <Select
                         value={data.riskLevel}
                         label="Risk Level"
                         onChange={(e) => onUpdate('riskLevel', e.target.value)}
-                      >
-                        <MenuItem value="High">High</MenuItem>
-                        <MenuItem value="Medium">Medium</MenuItem>
-                        <MenuItem value="Low">Low</MenuItem>
-                      </Select>
-                    </FormControl>
+                    >
+                      <MenuItem value="High">High</MenuItem>
+                      <MenuItem value="Medium">Medium</MenuItem>
+                      <MenuItem value="Low">Low</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                    <FormControl fullWidth size="small">
+                  <FormControl fullWidth size="small">
                       <InputLabel>Impact</InputLabel>
-                      <Select
+                    <Select
                         value={data.impact}
                         label="Impact"
                         onChange={(e) => onUpdate('impact', e.target.value)}
-                      >
-                        <MenuItem value="High">High</MenuItem>
-                        <MenuItem value="Medium">Medium</MenuItem>
-                        <MenuItem value="Low">Low</MenuItem>
-                      </Select>
-                    </FormControl>
+                    >
+                      <MenuItem value="High">High</MenuItem>
+                      <MenuItem value="Medium">Medium</MenuItem>
+                      <MenuItem value="Low">Low</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                    <FormControl fullWidth size="small">
+                  <FormControl fullWidth size="small">
                       <InputLabel>Likelihood</InputLabel>
-                      <Select
+                    <Select
                         value={data.likelihood}
                         label="Likelihood"
                         onChange={(e) => onUpdate('likelihood', e.target.value)}
-                      >
-                        <MenuItem value="High">High</MenuItem>
-                        <MenuItem value="Medium">Medium</MenuItem>
-                        <MenuItem value="Low">Low</MenuItem>
-                      </Select>
-                    </FormControl>
+                    >
+                      <MenuItem value="High">High</MenuItem>
+                      <MenuItem value="Medium">Medium</MenuItem>
+                      <MenuItem value="Low">Low</MenuItem>
+                    </Select>
+                  </FormControl>
 
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Action Priority</InputLabel>
-                      <Select
-                        value={data.actionPriority}
-                        label="Action Priority"
-                        onChange={(e) => onUpdate('actionPriority', e.target.value)}
-                      >
-                        <MenuItem value="High">High</MenuItem>
-                        <MenuItem value="Medium">Medium</MenuItem>
-                        <MenuItem value="Low">Low</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </Stack>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Action Priority</InputLabel>
+                    <Select
+                      value={data.actionPriority}
+                      label="Action Priority"
+                      onChange={(e) => onUpdate('actionPriority', e.target.value)}
+                    >
+                      <MenuItem value="High">High</MenuItem>
+                      <MenuItem value="Medium">Medium</MenuItem>
+                      <MenuItem value="Low">Low</MenuItem>
+                    </Select>
+                  </FormControl>
+              </Stack>
                 </Box>
               </Box>
-            </AccordionDetails>
+          </AccordionDetails>
           )}
         </Accordion>
 
@@ -628,7 +628,7 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
             </Typography>
           </AccordionSummary>
           {expandedSections.mitigation && (
-            <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
+          <AccordionDetails sx={{ px: 1.5, pb: 1.5 }}>
               <Box
                 sx={{
                   display: 'grid',
@@ -677,25 +677,57 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
                 {/* Right Column - Quantitative */}
                 <Box>
                   <Stack spacing={1.5}>
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Owner</InputLabel>
-                      <Select
-                        value={data.ownerDepartment}
-                        label="Owner"
-                        onChange={(e) => onUpdate('ownerDepartment', e.target.value)}
-                      >
-                        {departments.map((dept) => (
-                          <MenuItem key={dept} value={dept}>
-                            {dept}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Owner</InputLabel>
+                    <Select
+                      value={data.ownerDepartment}
+                      label="Owner"
+                      onChange={(e) => onUpdate('ownerDepartment', e.target.value)}
+                    >
+                      {departments.map((dept) => (
+                        <MenuItem key={dept} value={dept}>
+                          {dept}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
 
+                  <DatePicker
+                    label="Due Date"
+                    value={data.dueDate}
+                    onChange={(date) => onUpdate('dueDate', date)}
+                    slotProps={{
+                      textField: {
+                        fullWidth: true,
+                        size: 'small',
+                      },
+                    }}
+                  />
+
+              <FormControl fullWidth size="small">
+                <InputLabel>Status</InputLabel>
+                <Select value={data.status} label="Status" onChange={(e) => onUpdate('status', e.target.value)}>
+                  <MenuItem value="Not Started">Not Started</MenuItem>
+                  <MenuItem value="Auto-Filled">Auto-Filled</MenuItem>
+                  <MenuItem value="Needs Review">Needs Review</MenuItem>
+                  <MenuItem value="In Progress">In Progress</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                </Select>
+              </FormControl>
+
+              {data.status === 'Completed' && (
+                      <>
+                    <TextField
+                      label="Reviewed By"
+                      value={data.reviewedBy}
+                      onChange={(e) => onUpdate('reviewedBy', e.target.value)}
+                      fullWidth
+                      size="small"
+                    />
                     <DatePicker
-                      label="Due Date"
-                      value={data.dueDate}
-                      onChange={(date) => onUpdate('dueDate', date)}
+                      label="Reviewed On"
+                      value={data.reviewedOn}
+                      onChange={(date) => onUpdate('reviewedOn', date)}
                       slotProps={{
                         textField: {
                           fullWidth: true,
@@ -703,44 +735,12 @@ const ControlCard = memo(({ control, data, onUpdate }: ControlCardProps) => {
                         },
                       }}
                     />
-
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Status</InputLabel>
-                      <Select value={data.status} label="Status" onChange={(e) => onUpdate('status', e.target.value)}>
-                        <MenuItem value="Not Started">Not Started</MenuItem>
-                        <MenuItem value="Auto-Filled">Auto-Filled</MenuItem>
-                        <MenuItem value="Needs Review">Needs Review</MenuItem>
-                        <MenuItem value="In Progress">In Progress</MenuItem>
-                        <MenuItem value="Completed">Completed</MenuItem>
-                      </Select>
-                    </FormControl>
-
-                    {data.status === 'Completed' && (
-                      <>
-                        <TextField
-                          label="Reviewed By"
-                          value={data.reviewedBy}
-                          onChange={(e) => onUpdate('reviewedBy', e.target.value)}
-                          fullWidth
-                          size="small"
-                        />
-                        <DatePicker
-                          label="Reviewed On"
-                          value={data.reviewedOn}
-                          onChange={(date) => onUpdate('reviewedOn', date)}
-                          slotProps={{
-                            textField: {
-                              fullWidth: true,
-                              size: 'small',
-                            },
-                          }}
-                        />
                       </>
-                    )}
-                  </Stack>
+              )}
+            </Stack>
                 </Box>
               </Box>
-            </AccordionDetails>
+          </AccordionDetails>
           )}
         </Accordion>
       </CardContent>
@@ -762,11 +762,11 @@ export default function GAPAssessmentDetail() {
   useEffect(() => {
     setMounted(true);
     try {
-      const stored = localStorage.getItem('kaitaki_selected_policies');
-      if (stored) {
+    const stored = localStorage.getItem('kaitaki_selected_policies');
+    if (stored) {
         const policies = JSON.parse(stored);
         if (policies.length > 0) {
-          setSelectedPolicies(policies);
+        setSelectedPolicies(policies);
           setIsLoading(false);
           return;
         }
@@ -774,9 +774,9 @@ export default function GAPAssessmentDetail() {
       // Default fallback
       setSelectedPolicies(['pdpl-ksa']);
       setIsLoading(false);
-    } catch (e) {
+      } catch (e) {
       // Fallback on parse error
-      setSelectedPolicies(['pdpl-ksa']);
+        setSelectedPolicies(['pdpl-ksa']);
       setIsLoading(false);
     }
   }, []);
@@ -1058,7 +1058,7 @@ export default function GAPAssessmentDetail() {
                     const data = getControlData(control.id);
                     return (
                       <Box 
-                        key={control.id} 
+                        key={control.id}
                         sx={{ 
                           borderBottom: index < sectionControls.length - 1 ? '1px solid' : 'none', 
                           borderColor: 'divider',
@@ -1069,10 +1069,10 @@ export default function GAPAssessmentDetail() {
                         }}
                       >
                         <ControlCard
-                          control={control}
-                          data={data}
-                          onUpdate={(field, value) => updateControlData(control.id, field, value)}
-                        />
+                        control={control}
+                        data={data}
+                        onUpdate={(field, value) => updateControlData(control.id, field, value)}
+                      />
                       </Box>
                     );
                   })}

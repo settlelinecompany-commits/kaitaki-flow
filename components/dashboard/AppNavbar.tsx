@@ -8,8 +8,8 @@ import MuiToolbar from '@mui/material/Toolbar';
 import { tabsClasses } from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import ChatIcon from '@mui/icons-material/Chat';
+import Image from 'next/image';
 import SideMenuMobile from './SideMenuMobile';
 import MenuButton from './MenuButton';
 import ColorModeIconDropdown from './ColorModeIconDropdown';
@@ -35,23 +35,25 @@ function CustomIcon() {
   return (
     <Box
       sx={{
-        width: '1.5rem',
         height: '1.5rem',
-        bgcolor: 'black',
-        borderRadius: '999px',
         display: 'flex',
-        justifyContent: 'center',
         alignItems: 'center',
         alignSelf: 'center',
-        backgroundImage:
-          'linear-gradient(135deg, hsl(210, 98%, 60%) 0%, hsl(210, 100%, 35%) 100%)',
-        color: 'hsla(210, 100%, 95%, 0.9)',
-        border: '1px solid',
-        borderColor: 'hsl(210, 100%, 55%)',
-        boxShadow: 'inset 0 2px 5px rgba(255, 255, 255, 0.3)',
+        position: 'relative',
       }}
     >
-      <DashboardRoundedIcon color="inherit" sx={{ fontSize: '1rem' }} />
+      <Image
+        src="/kaitaki_HQ.png"
+        alt="Kaitaki"
+        width={80}
+        height={24}
+        style={{
+          objectFit: 'contain',
+          maxWidth: '100%',
+          height: 'auto',
+        }}
+        priority
+      />
     </Box>
   );
 }
@@ -90,12 +92,9 @@ export default function AppNavbar() {
           <Stack
             direction="row"
             spacing={1}
-            sx={{ justifyContent: 'center', mr: 'auto' }}
+            sx={{ justifyContent: 'center', mr: 'auto', alignItems: 'center' }}
           >
             <CustomIcon />
-            <Typography variant="h4" component="h1" sx={{ color: 'text.primary' }}>
-              Dashboard
-            </Typography>
           </Stack>
           <MenuButton
             aria-label="Open Kai"

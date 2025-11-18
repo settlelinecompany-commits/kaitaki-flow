@@ -78,30 +78,76 @@ export default function StatCard({
   const trendValues = { up: '+25%', down: '-25%', neutral: '+5%' };
 
   return (
-    <Card variant="outlined" sx={{ height: '100%', flexGrow: 1 }}>
-      <CardContent>
-        <Typography component="h2" variant="subtitle2" gutterBottom>
+    <Card
+      variant="outlined"
+      sx={{
+        height: '100%',
+        flexGrow: 1,
+        borderRadius: 3,
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.03)',
+        border: '1px solid',
+        borderColor: 'divider',
+      }}
+    >
+      <CardContent sx={{ p: 3 }}>
+        <Typography
+          component="h2"
+          variant="caption"
+          sx={{
+            fontSize: '0.75rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
+            fontWeight: 500,
+            color: 'text.secondary',
+            mb: 2,
+            display: 'block',
+          }}
+        >
           {title}
         </Typography>
         <Stack
           direction="column"
-          sx={{ justifyContent: 'space-between', flexGrow: '1', gap: 1 }}
+          sx={{ justifyContent: 'space-between', flexGrow: '1', gap: 2 }}
         >
-          <Stack sx={{ justifyContent: 'space-between' }}>
+          <Stack spacing={1}>
             <Stack
               direction="row"
-              sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+              sx={{ justifyContent: 'space-between', alignItems: 'flex-start' }}
             >
-              <Typography variant="h4" component="p">
+              <Typography
+                variant="h4"
+                component="p"
+                sx={{
+                  fontSize: '1.875rem',
+                  fontWeight: 700,
+                  color: 'text.primary',
+                  lineHeight: 1.2,
+                }}
+              >
                 {value}
               </Typography>
-              <Chip size="small" color={color} label={trendValues[trend]} />
+              <Chip
+                size="small"
+                color={color}
+                label={trendValues[trend]}
+                sx={{
+                  height: 22,
+                  fontSize: '0.75rem',
+                  fontWeight: 500,
+                }}
+              />
             </Stack>
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'text.secondary',
+                fontSize: '0.875rem',
+              }}
+            >
               {interval}
             </Typography>
           </Stack>
-          <Box sx={{ width: '100%', height: 50 }}>
+          <Box sx={{ width: '100%', height: 50, mt: 1 }}>
             <SparkLineChart
               color={chartColor}
               data={data}
@@ -110,7 +156,7 @@ export default function StatCard({
               showTooltip
               xAxis={{
                 scaleType: 'band',
-                data: daysInWeek, // Use the correct property 'data' for xAxis
+                data: daysInWeek,
               }}
               sx={{
                 [`& .${areaElementClasses.root}`]: {

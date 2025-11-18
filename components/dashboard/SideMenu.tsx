@@ -9,9 +9,9 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import ShieldRoundedIcon from '@mui/icons-material/ShieldRounded';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
+import Image from 'next/image';
 import MenuContent from './MenuContent';
 import OptionsMenu from './OptionsMenu';
 
@@ -78,13 +78,24 @@ export default function SideMenu() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              width: 40,
-              height: 40,
+              width: collapsed ? 20 : 'auto',
+              height: collapsed ? 20 : 18,
               mb: collapsed ? 0 : 1.5,
-              color: 'primary.main',
+              position: 'relative',
             }}
           >
-            <ShieldRoundedIcon sx={{ fontSize: 36 }} />
+            <Image
+              src="/kaitaki_HQ.png"
+              alt="Kaitaki"
+              width={collapsed ? 20 : 50}
+              height={collapsed ? 20 : 18}
+              style={{
+                objectFit: 'contain',
+                maxWidth: '100%',
+                height: 'auto',
+              }}
+              priority
+            />
           </Box>
           {!collapsed && (
             <Typography
